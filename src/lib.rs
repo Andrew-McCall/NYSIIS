@@ -1,9 +1,19 @@
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Options {
+    pub keep_numbers: bool,
+}
+
 pub fn nysiis(input: &str) -> String {
+    nysiis_opts(input, Options::default())
+}
+
+pub fn nysiis_opts(input: &str, opts: Options) -> String {
     let s: Vec<u8> = input
         .bytes()
         .filter_map(|b| match b {
             b'a'..=b'z' => Some(b - 32),
             b'A'..=b'Z' => Some(b),
+            b'0'..=b'9' if opts.keep_numbers => Some(b),
             _ => None,
         })
         .collect();
@@ -100,7 +110,7 @@ pub fn nysiis(input: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::nysiis;
+    use super::{nysiis, nysiis_opts, Options};
 
     #[test]
     fn matches_given_examples() {
@@ -143,5 +153,16 @@ mod tests {
         for (input, expected) in cases {
             assert_eq!(nysiis(input), expected, "{input}");
         }
+    }
+
+    #[test]
+    fn drops_numbers_by_default() {
+        assert_eq!(nysiis("Bishop2"), "BASAP");
+    }
+
+    #[test]
+    fn keeps_numbers_when_option_enabled() {
+        let opts = Options { keep_numbers: true };
+        assert_eq!(nysiis_opts("Bishop2", opts), "BASAP2");
     }
 }
